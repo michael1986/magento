@@ -1,34 +1,39 @@
 <?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * @category  Michael
+ * @package   Michael_Import
+ * @author    Michael Talashov <michael.talashov@gmail.com>
+ * @copyright 2018 Michael Talashov
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
+/**
+ * @category   Michael
+ * @package    Michael_Import
+ * @author     Michael Talashov <michael.talashov@gmail.com>
+ * @copyright  2018 Michael Talashov
+ */
 class Michael_Import_Model_Booking extends Mage_Core_Model_Abstract
 {
-    protected function _construct()
-    {
-        $this->_init('michael_import/booking');
-    }
-
     /**
-     * Save items.
-     *
-     * @param $items
+     * Initialization.
      *
      * @return void
      */
-    public function saveItems($items)
+    protected function _construct()
     {
-        $resource = \Mage::getSingleton('core/resource');
-        $dbh = $resource->getConnection('default_write');
-        $dbh->beginTransaction();
-
-        foreach ($items as $item) {
-            $this->setData($item);
-            foreach ($item['contact_data'] as $contactKey => $contactValue) {
-                $this->setData('contact_' . $contactKey, $contactValue);
-            }
-            $this->save();
-            $this->unsetData();
-        }
-
-        $dbh->commit();
+        $this->_init('michael_import/booking');
     }
 }

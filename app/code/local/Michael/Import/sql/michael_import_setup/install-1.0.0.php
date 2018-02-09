@@ -1,4 +1,23 @@
 <?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * @category  Michael
+ * @package   Michael_Import
+ * @author    Michael Talashov <michael.talashov@gmail.com>
+ * @copyright 2018 Michael Talashov
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 /* @var $installer Mage_Core_Model_Resource_Setup */
 $installer = $this;
@@ -16,7 +35,11 @@ if (!$installer->getConnection()->isTableExists($tableName)) {
             'primary'   => true,
         ])
         ->addColumn('booking_key', Varien_Db_Ddl_Table::TYPE_VARCHAR, 50, ['nullable'  => false])
-        ->addColumn('order_number', Varien_Db_Ddl_Table::TYPE_VARCHAR, 20, ['nullable'  => false])
+        ->addColumn('order_number', Varien_Db_Ddl_Table::TYPE_VARCHAR, 20, [
+            'unsigned'  => true,
+            'nullable'  => false,
+            'default'   => '0'
+        ])
         ->addColumn('order_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null, [
             'unsigned'  => true,
             'nullable'  => false,
@@ -77,10 +100,9 @@ if (!$installer->getConnection()->isTableExists($tableName)) {
         ->addColumn('contact_email', Varien_Db_Ddl_Table::TYPE_VARCHAR, 255, ['nullable'  => false])
         ->addColumn('contact_telephone', Varien_Db_Ddl_Table::TYPE_VARCHAR, 255, ['nullable'  => false]);
 
-    $table->addIndex($installer->getIdxName('michael_import/booking', ['order_id']), ['order_id'])
-        ->addIndex($installer->getIdxName('michael_import/booking', ['product_id']), ['product_id'])
-        ->addIndex($installer->getIdxName('michael_import/booking', ['option_id']), ['option_id'])
-        ->addIndex($installer->getIdxName('michael_import/booking', ['product_supplier_id']), ['product_supplier_id']);
+    $table->addIndex($installer->getIdxName('michael_import/booking', ['booking_key']), ['booking_key'])
+        ->addIndex($installer->getIdxName('michael_import/booking', ['order_id']), ['order_id'])
+        ->addIndex($installer->getIdxName('michael_import/booking', ['product_id']), ['product_id']);
 
     $installer->getConnection()->createTable($table);
 }

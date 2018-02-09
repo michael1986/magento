@@ -20,20 +20,21 @@
  */
 
 /**
+ * Import data Interface.
+ *
  * @category   Michael
  * @package    Michael_Import
  * @author     Michael Talashov <michael.talashov@gmail.com>
- * @copyright  2018 Michael Talashov
+ * @copyright 2018 Michael Talashov
  */
-class Michael_Import_Model_Resource_Booking_Collection extends Mage_Core_Model_Mysql4_Collection_Abstract
+interface Michael_Import_Model_Import_Interface
 {
     /**
-     * Initialization.
+     * Import items.
+     *
+     * @param array $items Items.
      *
      * @return void
      */
-    public function _construct()
-    {
-        $this->_init('michael_import/booking');
-    }
+    public function import($items);
 }

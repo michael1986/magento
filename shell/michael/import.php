@@ -1,18 +1,52 @@
 <?php
-// TODO: comment
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * @category  Michael
+ * @package   Michael_Import
+ * @author    Michael Talashov <michael.talashov@gmail.com>
+ * @copyright 2018 Michael Talashov
+ * @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 require_once dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'abstract.php';
 
-// TODO: comment
-class Michael_Shell_ImportBookings extends Mage_Shell_Abstract
+/**
+ * Import data fetched from external API.
+ *
+ * @category   Michael
+ * @package    Michael_Import
+ * @author     Michael Talashov <michael.talashov@gmail.com>
+ * @copyright  2018 Michael Talashov
+ */
+class Michael_Shell_Import extends Mage_Shell_Abstract
 {
-    // TODO: comments
-    protected $_basePath = 'supplier/bookings';
-    protected $_baseUrl = 'https://sandbox-api.regiondo.com/v1/';
-    protected $_acceptLanguage = 'de-DE';
-    protected $_publicKey;
-    protected $_privateKey;
-    protected $_data;
+    /**
+     * @var string Properties with passed arguments.
+     */
+    protected $_basePath = 'supplier/bookings',
+        $_baseUrl = 'https://sandbox-api.regiondo.com/v1/',
+        $_acceptLanguage = 'de-DE',
+        $_publicKey,
+        $_privateKey,
+        $_data;
+
+    /**
+     * @var array Mapping Actions to Import models.
+     */
+    protected $_mapActionToImportModel = [
+        'supplier/bookings' => 'michael_import/import_booking'
+    ];
 
     /**
      * Additional initialize instruction.
@@ -53,9 +87,23 @@ class Michael_Shell_ImportBookings extends Mage_Shell_Abstract
             die('Server responded with error: ' . $decodedResponse['message'] . ' (' .$decodedResponse['code']. ')');
         }
 
-        Mage::getModel('michael_import/booking')->saveItems($decodedResponse['data']);
+        $importModel = Mage::getModel($this->_mapActionToImportModel[$this->_basePath]);
+        $importModel->import($decodedResponse['data']);
+
+        if (count($importModel->getErrors()) > 0) {
+            $textMessage = "The following items weren't imported because of errors:\n";
+            foreach ($importModel->getErrors() as $errorData) {
+                $textMessage .= "Item #" . $errorData['id'] . ": " . $errorData['message'] . "\n";
+            }
+            die($textMessage);
+        }
     }
 
+    /**
+     * Set passed arguments to class properties.
+     *
+     * @return void
+     */
     protected function _setArguments()
     {
         $this->_publicKey = $this->getArg('publicKey');
@@ -69,12 +117,13 @@ class Michael_Shell_ImportBookings extends Mage_Shell_Abstract
         if ($this->getArg('lang')) {
             $this->_acceptLanguage = $this->getArg('lang');
         }
-        $this->_data = $this->_getData($this->getArg('data'));
+        $this->_data = $this->_parseData($this->getArg('data'));
     }
 
     /**
-     * Validate arguments
-     * todo
+     * Validate arguments.
+     *
+     * @return void
      */
     protected function _validate()
     {
@@ -86,8 +135,23 @@ class Michael_Shell_ImportBookings extends Mage_Shell_Abstract
             echo $this->usageHelp();
             die();
         }
+        if ($this->getArg('action')
+            && !in_array($this->getArg('action'), $this->_mapActionToImportModel)
+        ) {
+            echo "There is no Import Model for provided action\n\n";
+            echo $this->usageHelp();
+            die();
+        }
     }
 
+    /**
+     * Execute request via CURL.
+     *
+     * @param array $data Request parameters.
+     * @param array $headers Headers.
+     *
+     * @return string
+     */
     protected function _curlExec($data, $headers)
     {
         $ch = curl_init();
@@ -126,30 +190,13 @@ class Michael_Shell_ImportBookings extends Mage_Shell_Abstract
     }
 
     /**
-     * Retrieve Usage Help message.
+     * Parse Data argument.
      *
-     * @return string
+     * @param string $value Argument value.
+     *
+     * @return array
      */
-    public function usageHelp()
-    {
-        return <<<USAGE
-Usage:  php -f import_bookings.php -- [options]
-        php import_bookings.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY
-        php import_bookings.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY --lang de-DE --baseUrl https://sandbox-api.regiondo.com/v1/ --data limit=10#offset=100
-
-  --publicKey <KEY>          Public key
-  --privateKey <KEY>         Protected (secure) key
-  --lang                     Accepted language, e.g. de-DE, en-US, de-AT, fr-FR etc.
-  --baseUrl                  Base API URL, e.g. https://api.regiondo.de/v1/
-  --data                     Any GET parameters which you want to send, e.g. limit=10#offset=100
-    
-  help                   This help
-
-USAGE;
-    }
-
-    // TODO
-    protected function _getData($argValue)
+    protected function _parseData($value)
     {
         $res = [];
         if (!empty($argValue)) {
@@ -162,7 +209,31 @@ USAGE;
 
         return $res;
     }
+
+    /**
+     * Retrieve Usage Help message.
+     *
+     * @return string
+     */
+    public function usageHelp()
+    {
+        return <<<USAGE
+Usage:  php -f import_bookings.php -- [options]
+        php import_bookings.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY
+        php import_bookings.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY --action supplier/bookings --lang de-DE --baseUrl https://sandbox-api.regiondo.com/v1/ --data limit=10#offset=100
+
+  --publicKey <KEY>          Public key
+  --privateKey <KEY>         Protected (secure) key
+  --action                   Url action part, allowed values: supplier/bookings (by default) 
+  --lang                     Accepted language, e.g. de-DE, en-US, de-AT, fr-FR etc.
+  --baseUrl                  Base API URL, e.g. https://api.regiondo.de/v1/
+  --data                     Any GET parameters which you want to send, e.g. limit=10#offset=100
+    
+  help                   This help
+
+USAGE;
+    }
 }
 
-$shell = new Michael_Shell_ImportBookings();
+$shell = new Michael_Shell_Import();
 $shell->run();

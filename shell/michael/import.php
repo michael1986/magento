@@ -84,7 +84,7 @@ class Michael_Shell_Import extends Mage_Shell_Abstract
         }
         $decodedResponse = json_decode($response, true);
         if (isset($decodedResponse['code'])) {
-            die('Server responded with error: ' . $decodedResponse['message'] . ' (' .$decodedResponse['code']. ')');
+            die('Server responded with error: ' . $decodedResponse['message'] . ' (' .$decodedResponse['code']. ")\n");
         }
 
         $importModel = Mage::getModel($this->_mapActionToImportModel[$this->_basePath]);
@@ -97,6 +97,8 @@ class Michael_Shell_Import extends Mage_Shell_Abstract
             }
             die($textMessage);
         }
+
+        die("Import completed\n");
     }
 
     /**
@@ -192,15 +194,15 @@ class Michael_Shell_Import extends Mage_Shell_Abstract
     /**
      * Parse Data argument.
      *
-     * @param string $value Argument value.
+     * @param string $data Data argument.
      *
      * @return array
      */
-    protected function _parseData($value)
+    protected function _parseData($data)
     {
         $res = [];
-        if (!empty($argValue)) {
-            $tmp = explode('#', $argValue);
+        if (!empty($data)) {
+            $tmp = explode('#', $data);
             foreach ($tmp as $param) {
                 list($k, $v) = explode('=', $param);
                 $res[ $k ] = $v;
@@ -218,9 +220,9 @@ class Michael_Shell_Import extends Mage_Shell_Abstract
     public function usageHelp()
     {
         return <<<USAGE
-Usage:  php -f import_bookings.php -- [options]
-        php import_bookings.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY
-        php import_bookings.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY --action supplier/bookings --lang de-DE --baseUrl https://sandbox-api.regiondo.com/v1/ --data limit=10#offset=100
+Usage:  php -f import.php -- [options]
+        php import.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY
+        php import.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY --action supplier/bookings --lang de-DE --baseUrl https://sandbox-api.regiondo.com/v1/ --data limit=10#offset=100
 
   --publicKey <KEY>          Public key
   --privateKey <KEY>         Protected (secure) key
@@ -229,7 +231,7 @@ Usage:  php -f import_bookings.php -- [options]
   --baseUrl                  Base API URL, e.g. https://api.regiondo.de/v1/
   --data                     Any GET parameters which you want to send, e.g. limit=10#offset=100
     
-  help                   This help
+  help                       This help
 
 USAGE;
     }

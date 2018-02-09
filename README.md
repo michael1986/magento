@@ -1,9 +1,9 @@
 # magento
 The Import can be run by the following command:
 ```
-php import_bookings.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY
+php shell/michael/import.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY
 ```
-or for getting more information:
+For the more information:
 ```
-php import_bookings.php help
+php shell/michael/import.php help
 ```

@@ -3,7 +3,7 @@ The Import can be run by the following command:
 ```
 php shell/michael/import.php --publicKey YOUR_PUBLIC_KEY --privateKey YOUR_PRIVATE_KEY
 ```
-For the more information:
+For more information:
 ```
 php shell/michael/import.php help
 ```

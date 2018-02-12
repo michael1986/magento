@@ -37,4 +37,19 @@ interface Michael_Import_Model_Import_Interface
      * @return void
      */
     public function import($items);
+
+    /**
+     * Get errors caused during Import.
+     * Result may be in the following format excepting plain array with error messages:
+     * [
+     *   [
+     *     'id' => 'Unique row ID',
+     *     'message' => 'Error message'
+     *   ],
+     *   ...
+     * ]
+     *
+     * @return array
+     */
+    public function getErrors();
 }

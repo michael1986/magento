@@ -68,6 +68,7 @@ class Michael_Shell_Import extends Mage_Shell_Abstract
      */
     public function run()
     {
+        // Send request and handle response.
         $this->_setArguments();
         $time = time();
         $message = $this->_buildMessage($time, $this->_publicKey, $this->_data);
@@ -87,15 +88,21 @@ class Michael_Shell_Import extends Mage_Shell_Abstract
             die('Server responded with error: ' . $decodedResponse['message'] . ' (' .$decodedResponse['code']. ")\n");
         }
 
+        // Import data.
         $importModel = Mage::getModel($this->_mapActionToImportModel[$this->_basePath]);
         $importModel->import($decodedResponse['data']);
 
+        // Output errors.
         if (count($importModel->getErrors()) > 0) {
             $textMessage = "The following items weren't imported because of errors:\n";
             foreach ($importModel->getErrors() as $errorData) {
-                $textMessage .= "Item #" . $errorData['id'] . ": " . $errorData['message'] . "\n";
+                if (array_key_exists('id', $errorData) && array_key_exists('message', $errorData)) {
+                    $textMessage .= "Item #" . $errorData['id'] . ": " . $errorData['message'] . "\n";
+                } else {
+                    $textMessage .= $errorData . "\n";
+                }
             }
-            die($textMessage);
+            print_r($textMessage);
         }
 
         die("Import completed\n");
